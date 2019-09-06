@@ -119,14 +119,14 @@ class Network:
         mask = colour_codes[np.around(mask, decimals=0).astype(int)]
         return np.uint8(mask * 255)
     
-    def train_synthetic_data(self, epochs=5000, steps=100, batch_size=1, weights_path='./weights/weights.ckpt', saving_epochs=500, DICT_4X4_50=False, DICT_4X4_100=False, DICT_4X4_250=False, DICT_4X4_1000=False, DICT_5X5_50=False, DICT_5X5_100=False, DICT_5X5_250=False, DICT_5X5_1000=False, DICT_6X6_50=False, DICT_6X6_100=False, DICT_6X6_250=False, DICT_6X6_1000=False, DICT_7X7_50=False, DICT_7X7_100=False, DICT_7X7_250=False, DICT_7X7_1000=False, DICT_ARUCO_ORIGINAL=False, DICT_APRILTAG_16h5=False, DICT_APRILTAG_25h9=False, DICT_APRILTAG_36h10=False, DICT_APRILTAG_36h11=True):
+    def train_synthetic_data(self, iterations=5000, steps=100, batch_size=1, weights_path='./weights/weights.ckpt', saving_iterations=500, DICT_4X4_50=False, DICT_4X4_100=False, DICT_4X4_250=False, DICT_4X4_1000=False, DICT_5X5_50=False, DICT_5X5_100=False, DICT_5X5_250=False, DICT_5X5_1000=False, DICT_6X6_50=False, DICT_6X6_100=False, DICT_6X6_250=False, DICT_6X6_1000=False, DICT_7X7_50=False, DICT_7X7_100=False, DICT_7X7_250=False, DICT_7X7_1000=False, DICT_ARUCO_ORIGINAL=False, DICT_APRILTAG_16h5=False, DICT_APRILTAG_25h9=False, DICT_APRILTAG_36h10=False, DICT_APRILTAG_36h11=True):
         saver = tf.train.Saver()
         # Generate one sample to calculate accuracy
         image, mask = sg.generate_random_full_synthetic_sample(self.shape, DICT_4X4_50, DICT_4X4_100, DICT_4X4_250, DICT_4X4_1000, DICT_5X5_50, DICT_5X5_100, DICT_5X5_250, DICT_5X5_1000, DICT_6X6_50, DICT_6X6_100, DICT_6X6_250, DICT_6X6_1000, DICT_7X7_50, DICT_7X7_100, DICT_7X7_250, DICT_7X7_1000, DICT_ARUCO_ORIGINAL, DICT_APRILTAG_16h5, DICT_APRILTAG_25h9, DICT_APRILTAG_36h10, DICT_APRILTAG_36h11)
         callback_image = np.float32(image)/255.0
         callback_mask = self.one_hot_it(mask)
         # Training loop
-        for epoch in range(0, epochs + 1):
+        for iteration in range(0, iterations + 1):
             # Create two batches for input images and a batch with the ground truth
             input_batch = np.zeros([batch_size, self.shape[0], self.shape[1], self.shape[2]])
             output_batch = np.zeros([batch_size, self.shape[0], self.shape[1], self.classes])
@@ -135,7 +135,7 @@ class Network:
                 image = None
                 mask = None
                 # Switch between full synthetic and half synthetic samples
-                if epoch % 2 == 0:
+                if iteration % 2 == 0:
                     image, mask = sg.generate_random_full_synthetic_sample(self.shape, DICT_4X4_50, DICT_4X4_100, DICT_4X4_250, DICT_4X4_1000, DICT_5X5_50, DICT_5X5_100, DICT_5X5_250, DICT_5X5_1000, DICT_6X6_50, DICT_6X6_100, DICT_6X6_250, DICT_6X6_1000, DICT_7X7_50, DICT_7X7_100, DICT_7X7_250, DICT_7X7_1000, DICT_ARUCO_ORIGINAL, DICT_APRILTAG_16h5, DICT_APRILTAG_25h9, DICT_APRILTAG_36h10, DICT_APRILTAG_36h11)
                 else:
                     image, mask = sg.generate_random_half_synthetic_sample(self.shape, DICT_4X4_50, DICT_4X4_100, DICT_4X4_250, DICT_4X4_1000, DICT_5X5_50, DICT_5X5_100, DICT_5X5_250, DICT_5X5_1000, DICT_6X6_50, DICT_6X6_100, DICT_6X6_250, DICT_6X6_1000, DICT_7X7_50, DICT_7X7_100, DICT_7X7_250, DICT_7X7_1000, DICT_ARUCO_ORIGINAL, DICT_APRILTAG_16h5, DICT_APRILTAG_25h9, DICT_APRILTAG_36h10, DICT_APRILTAG_36h11)
@@ -151,9 +151,9 @@ class Network:
                 mask = self.sess.run(self.network, feed_dict={self.inputs: input_image})
                 accuracy = self.compute_accuracy(mask, deepcopy(callback_mask))
                 # Print training information
-                print("Epoch: %d/%d, Loss: %g, Accuracy: %g" % (epoch, epochs, current_loss, accuracy))
+                print("Iteration: %d/%d, Loss: %g, Accuracy: %g" % (iteration, iterations, current_loss, accuracy))
                 # Save weights if triggered
-                if epoch % saving_epochs == 0:
+                if iteration % saving_iterations == 0:
                     print("Save weights")
                     if not os.path.isdir("weights"):
                         os.mkdir("weights")
@@ -162,11 +162,11 @@ class Network:
     def read_resize_image(self, path):
         return cv2.resize(cv2.imread(path), (self.shape[0], self.shape[1]))
     
-    def train_real_data(self, epochs=5000, steps=100, batch_size=1, weights_path='./weights/weights.ckpt', saving_epochs=500, dataset=None):
+    def train_real_data(self, iterations=5000, steps=100, batch_size=1, weights_path='./weights/weights.ckpt', saving_iterations=500, dataset=None):
         if dataset is not None:
             saver = tf.train.Saver()
             # Training loop
-            for epoch in range(0, epochs + 1):
+            for iteration in range(0, iterations + 1):
                 # Create two batches for input images and a batch with the ground truth
                 input_batch = np.zeros([batch_size, self.shape[0], self.shape[1], self.shape[2]])
                 output_batch = np.zeros([batch_size, self.shape[0], self.shape[1], self.classes])
@@ -185,9 +185,9 @@ class Network:
                 mask = self.sess.run(self.network, feed_dict={self.inputs: input_image})
                 accuracy = self.compute_accuracy(mask, self.one_hot_it(self.read_resize_image(dataset[0][1])))
                 # Print training information
-                print("Epoch: %d/%d, Loss: %g, Accuracy: %g" % (epoch, epochs - 1, current_loss, accuracy))
+                print("Iteration: %d/%d, Loss: %g, Accuracy: %g" % (iteration, iterations - 1, current_loss, accuracy))
                 # Save weights if triggered
-                if epoch % saving_epochs == 0:
+                if iteration % saving_iterations == 0:
                     print("Save weights")
                     if not os.path.isdir("weights"):
                         os.mkdir("weights")
