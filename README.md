@@ -21,6 +21,9 @@ I have already tried to train SegNet on real data, but the generation of a enoug
 python3 train_real_data.py -i 150000 -bs 4 -dp ./train_dataset
 ```
 A list with all arguments can be seen with the `-h` parameter.
+
+If you want to try this, you can use the `train_real_data.py` script. 
+However, a calibration for the camera is required, as done [here](https://github.com/StevenCyb/Augmented-Reality-with-OpenCV-and-ArUco-marker-detection).
 ### Do Prediction
 You can run a prection with the following command: 
 ```
